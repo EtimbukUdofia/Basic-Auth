@@ -9,7 +9,9 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint .",
-    "format": "prettier --write .",
+    "lint:fix": "eslint . --fix",
+    "format:fix": "prettier --write .",
+    "format": "prettier --check .",
     "migrate": "tsx scripts/migrate.ts",
     "seed": "tsx scripts/seed.ts",
     "prepare": "husky install"
