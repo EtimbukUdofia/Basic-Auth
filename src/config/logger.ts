@@ -16,7 +16,7 @@ const devFormat = winston.format.combine(
     const metaStr = Object.keys(meta).length
       ? JSON.stringify(meta, null, 2)
       : "";
-    return `${timestamp} [${level}]: ${message} ${metaStr}`;
+    return `${timestamp} [${level}]: ${message}${metaStr ? ` ${metaStr}` : ""}`;
   }),
 );
 
@@ -43,7 +43,7 @@ const getTransports = () => {
     transports.push(
       new winston.transports.Console({
         format: devFormat,
-        level: env.LOG_LEVEL || "debug",
+        level: env.LOG_LEVEL,
       }),
     );
   } else if (isProduction) {
@@ -51,7 +51,7 @@ const getTransports = () => {
     transports.push(
       new winston.transports.Console({
         format: prodFormat,
-        level: env.LOG_LEVEL || "info",
+        level: env.LOG_LEVEL,
       }),
     );
 
@@ -89,11 +89,11 @@ const getTransports = () => {
 
 // Create logger instance
 const logger = winston.createLogger({
-  level: env.LOG_LEVEL || (isDevelopment ? "debug" : "info"),
+  level: env.LOG_LEVEL,
   transports: getTransports(),
   exitOnError: false, // Don't exit on unhandled exceptions
   defaultMeta: {
-    environment: env.NODE_ENV || "development",
+    environment: env.NODE_ENV,
   },
 });
 
@@ -108,6 +108,10 @@ if (isProduction) {
       maxFiles: "14d",
       utc: true,
     }),
+  );
+} else {
+  logger.rejections.handle(
+    new winston.transports.Console({ format: devFormat }),
   );
 }
 
