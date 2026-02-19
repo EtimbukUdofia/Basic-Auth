@@ -4,7 +4,7 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import requestLogger from "./middleware/request-logger.js";
 import errorHandler from "./middleware/error-handler.js";
-import timingMiddleware from "./middleware/error-timer.js";
+import timingMiddleware from "./middleware/request-timer.js";
 
 const app = express();
 

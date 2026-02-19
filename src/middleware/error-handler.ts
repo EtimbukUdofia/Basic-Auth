@@ -1,41 +1,42 @@
-import type { Request, Response, NextFunction } from "express";
-import type { CustomError } from "../errors/Error.js";
+import type { NextFunction, Request, Response } from "express";
 import type { ErrorData } from "../types/error.types.js";
 import logger from "../config/logger.js";
 import { env } from "../config/env.js";
 
 export const errorHandler = (
-  err: CustomError,
+  err: Error & { statusCode: number },
   req: Request,
   res: Response,
-  next: NextFunction,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _next: NextFunction,
 ) => {
-  const duration = Date.now() - (res.locals.startTime || 0);
+  const duration = res.locals.startTime
+    ? Date.now() - res.locals.startTime
+    : undefined;
 
   const errorData: ErrorData = {
     message: err.message,
     statusCode: err.statusCode || 500,
     path: req.path,
     method: req.method,
-    duration: `${duration}ms`,
+    duration: duration != null ? `${duration}ms` : "N/A",
     ip: req.ip,
     ...(env.NODE_ENV === "development" && { stack: err.stack }),
   };
 
   if (err.statusCode >= 500 || !err.statusCode) {
-    logger.error("Unhandled error", errorData);
+    logger.error("Unhandled error:", errorData);
   } else if (err.statusCode >= 400) {
-    logger.warn("Request validation error:", errorData);
+    logger.error("Request validation error:", errorData);
   }
 
   res.status(err.statusCode || 500).json({
     error: {
-      message: err.message,
-      statusCode: err.statusCode,
+      message: errorData.message,
+      statusCode: errorData.statusCode,
       ...(env.NODE_ENV === "development" && { stack: err.stack }),
     },
   });
-  next();
 };
 
 export default errorHandler;

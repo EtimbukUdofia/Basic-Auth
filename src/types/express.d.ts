@@ -8,5 +8,9 @@ declare global {
         id: string;
       };
     }
+
+    interface Locals {
+      startTime?: number;
+    }
   }
 }

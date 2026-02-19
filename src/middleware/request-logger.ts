@@ -3,17 +3,17 @@ import type { Request, Response, NextFunction } from "express";
 import logger from "../config/logger.js";
 
 const requestLogger = (req: Request, res: Response, next: NextFunction) => {
-  const startTime = Date.now();
-
   // Listen for when response is finished
   res.on("finish", () => {
-    const duration = Date.now() - startTime;
+    const duration = res.locals.startTime
+      ? Date.now() - res.locals.startTime
+      : undefined;
 
     const logData = {
       method: req.method,
       path: req.path,
       statusCode: res.statusCode,
-      duration: `${duration}ms`,
+      duration: duration != null ? `${duration}ms` : "N/A",
       ip: req.ip,
       userAgent: req.get("user-agent"),
     };

@@ -3,6 +3,7 @@ export class CustomError extends Error {
   constructor(message: string, statusCode: number) {
     super(message);
     this.statusCode = statusCode;
+    this.name = this.constructor.name;
   }
 }
 
@@ -36,8 +37,8 @@ export class ConflictError extends CustomError {
   }
 }
 
-export class ServerError extends CustomError {
-  constructor(message = "Server Error") {
+export class InternalServerError extends CustomError {
+  constructor(message = "Internal Server Error") {
     super(message, 500);
   }
 }

@@ -4,8 +4,8 @@ import DailyRotateFile from "winston-daily-rotate-file";
 
 import { env } from "./env.js";
 
-const isDevelopment = env.NODE_ENV !== "production";
 const isProduction = env.NODE_ENV === "production";
+const isDevelopment = !isProduction;
 
 // Custom format for development
 const devFormat = winston.format.combine(
@@ -24,7 +24,6 @@ const devFormat = winston.format.combine(
 const prodFormat = winston.format.combine(
   winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
   winston.format.errors({ stack: true }),
-  winston.format.json(),
   winston.format.printf(({ timestamp, level, message, ...meta }) => {
     return JSON.stringify({
       timestamp,
@@ -59,13 +58,13 @@ const getTransports = () => {
     // Error log file rotation (production)
     transports.push(
       new DailyRotateFile({
-        filename: path.join(env.LOG_DIR || "./logs", "error-%DATE%.log"),
+        filename: path.join(env.LOG_DIR, "error-%DATE%.log"),
         datePattern: "YYYY-MM-DD",
         level: "error",
         format: prodFormat,
         maxSize: "20m",
         maxFiles: "14d",
-        auditFile: path.join(env.LOG_DIR || "./logs", ".audit-error.json"),
+        auditFile: path.join(env.LOG_DIR, ".audit-error.json"),
         utc: true,
       }),
     );
@@ -73,13 +72,13 @@ const getTransports = () => {
     // Combined log file rotation (production)
     transports.push(
       new DailyRotateFile({
-        filename: path.join(env.LOG_DIR || "./logs", "combined-%DATE%.log"),
+        filename: path.join(env.LOG_DIR, "combined-%DATE%.log"),
         datePattern: "YYYY-MM-DD",
         level: "info",
         format: prodFormat,
         maxSize: "20m",
         maxFiles: "30d",
-        auditFile: path.join(env.LOG_DIR || "./logs", ".audit-combined.json"),
+        auditFile: path.join(env.LOG_DIR, ".audit-combined.json"),
         utc: true,
       }),
     );
@@ -102,7 +101,7 @@ const logger = winston.createLogger({
 if (isProduction) {
   logger.exceptions.handle(
     new DailyRotateFile({
-      filename: path.join(env.LOG_DIR || "./logs", "exceptions-%DATE%.log"),
+      filename: path.join(env.LOG_DIR, "exceptions-%DATE%.log"),
       datePattern: "YYYY-MM-DD",
       format: prodFormat,
       maxSize: "20m",
@@ -115,10 +114,7 @@ if (isProduction) {
 // Handle unhandled rejections
 logger.rejections.handle(
   new DailyRotateFile({
-    filename: path.join(
-      process.env.LOG_DIR || "./logs",
-      "rejections-%DATE%.log",
-    ),
+    filename: path.join(env.LOG_DIR, "rejections-%DATE%.log"),
     datePattern: "YYYY-MM-DD",
     format: prodFormat,
     maxSize: "20m",
