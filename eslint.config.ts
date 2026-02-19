@@ -11,13 +11,8 @@ export default defineConfig([
     extends: ["js/recommended"],
     languageOptions: {
       globals: globals.node,
-      // parserOptions: {
-      //   project: true,
-      //   tsconfigRootDir: import.meta.dirname,
-      // },
     },
   },
   js.configs.recommended,
   tseslint.configs.recommended,
-  // tseslint.configs.recommendedTypeChecked,
 ]);
