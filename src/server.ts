@@ -18,9 +18,16 @@ const main = () => {
 main();
 
 const shutdown = (signal: string) => {
-  logger.info(`${signal} signal recieved: closing HTTP server`);
+  logger.info(`${signal} signal received: closing HTTP server`);
+
+  const forceExitTimer = setTimeout(() => {
+    logger.error("Graceful shutdown timed out — forcing exit");
+    process.exit(1);
+  }, 10_000);
+  forceExitTimer.unref();
   server.close(() => {
     logger.info("HTTP server closed");
+    clearTimeout(forceExitTimer);
     process.exit(0);
   });
 };
@@ -29,8 +36,12 @@ process.on("SIGTERM", () => shutdown("SIGTERM"));
 
 process.on("SIGINT", () => shutdown("SIGINT"));
 
-process.on("unhandledRejection", (err: Error) => {
-  console.error("UNHANDLED REJECTION!!! Shutting down...");
-  console.error(err.name, err.message);
+process.on("unhandledRejection", (reason: unknown) => {
+  const err = reason instanceof Error ? reason : new Error(String(reason));
+  logger.error("UNHANDLED REJECTION!!! Shutting down...", {
+    name: err.name,
+    message: err.message,
+    stack: err.stack,
+  });
   process.exit(1);
 });

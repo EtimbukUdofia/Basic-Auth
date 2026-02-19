@@ -112,15 +112,21 @@ if (isProduction) {
 }
 
 // Handle unhandled rejections
-logger.rejections.handle(
-  new DailyRotateFile({
-    filename: path.join(env.LOG_DIR, "rejections-%DATE%.log"),
-    datePattern: "YYYY-MM-DD",
-    format: prodFormat,
-    maxSize: "20m",
-    maxFiles: "14d",
-    utc: true,
-  }),
-);
+if (isProduction) {
+  logger.rejections.handle(
+    new DailyRotateFile({
+      filename: path.join(env.LOG_DIR, "rejections-%DATE%.log"),
+      datePattern: "YYYY-MM-DD",
+      format: prodFormat,
+      maxSize: "20m",
+      maxFiles: "14d",
+      utc: true,
+    }),
+  );
+} else {
+  logger.rejections.handle(
+    new winston.transports.Console({ format: devFormat }),
+  );
+}
 
 export default logger;

@@ -4,7 +4,7 @@ import logger from "../config/logger.js";
 import { env } from "../config/env.js";
 
 export const errorHandler = (
-  err: Error & { statusCode: number },
+  err: Error & { statusCode?: number },
   req: Request,
   res: Response,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -24,10 +24,12 @@ export const errorHandler = (
     ...(env.NODE_ENV === "development" && { stack: err.stack }),
   };
 
-  if (err.statusCode >= 500 || !err.statusCode) {
+  if (!err.statusCode || err.statusCode >= 500) {
     logger.error("Unhandled error:", errorData);
   } else if (err.statusCode >= 400) {
-    logger.error("Request validation error:", errorData);
+    logger.warn("Request validation error:", errorData);
+  } else {
+    logger.info("Error response:", errorData);
   }
 
   res.status(err.statusCode || 500).json({
